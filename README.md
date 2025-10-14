@@ -17,7 +17,7 @@ It provides native methods for GPU-accelerated linear algebra and utility calls 
 ## 📦 Repository Structure
 jcublas/ 
 ├─ src/com/neocoretechs/cublas/    
-├───────────────────────────── Gemm.java        # Java wrapper for cuBLAS calls 
+├───────────────────── Gemm.java # Java wrapper for cuBLAS calls 
 │   
 ├─ README.md
 │
