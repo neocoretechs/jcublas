@@ -79,7 +79,9 @@ public class Gemm {
 	 public static native int matrixDotProductFCPUBatch(int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
 	 public static native int matrixDotProductF16(long handle, int rows1, int columns1, float[] m1, int rows2, int columns2, float[] m2, float[] mr);
 	 public static native int matrixDotProductF16Batch(long handle, int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
+	 public static native int matrixDotProductF16StridedBatch(long handle, int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
 	 public static native int matrixDotProductF16Stream(long handle, int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
+	 public static native int sdot(long handle, int n, float[] x, int incx, float[] y, int incy, float[] result);
 	 public static native long cublasHandle();
 	 public static native int cublasHandleDestroy(long handle);
 	 public static native long[] cudaMemGetInfo();
