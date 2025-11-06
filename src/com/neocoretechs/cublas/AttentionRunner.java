@@ -1,11 +1,9 @@
 package com.neocoretechs.cublas;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public final class AttentionRunner {
-
+	public static boolean DEBUG = false;
     public static final class Config {
         public final int heads;
         public final int d;       // head size
@@ -17,7 +15,7 @@ public final class AttentionRunner {
     }
 
     // Core execution: returns O packed per head as float[]
-    public static float[] run(Attn ctx, Config cfg, float[] Q, float[] K, float[] V) {
+    public static float[] run(long cublasHandle, Attn ctx, Config cfg, float[] Q, float[] K, float[] V) {
         final int H = cfg.heads; // batch size across heads
         final int d = cfg.d;
         final int Tq = cfg.Tq;
@@ -34,13 +32,15 @@ public final class AttentionRunner {
 
         // Wrap packed buffers in ArrayLists expected by JNI strided batched
         // GEMM 1: S = Q * K^T, strided batched over heads
-        ArrayList<float[]> qList = new ArrayList<>(List.of(Q));
-        ArrayList<float[]> kList = new ArrayList<>(List.of(K));
-        
-        ArrayList<float[]> sList = new ArrayList<>(List.of(S));
-        //int rc1 = Gemm.matrixDotProductF16StridedBatch(ctx.getHandle(), Tq, d, qList, Tk, d, kList, sList, H);
+        //ArrayList<float[]> qList = new ArrayList<>(List.of(Q));
+        //ArrayList<float[]> kList = new ArrayList<>(List.of(K)); 
+        //ArrayList<float[]> sList = new ArrayList<>(List.of(S));
+        //int rc1 = Gemm.matrixDotProductF16StridedBatch(Llama3., Tq, d, qList, Tk, d, kList, sList, H);
         // GEMM 1: S = (1/sqrt(d)) * Q * K^T   (FP16 inputs, FP32 accumulate)
-        int rc1 = Gemm.matrixDotProductF16StridedBatchFlat(ctx.getHandle(), Tq, d, Q, Tk, d, K, S, H);
+        if(DEBUG)
+        	System.out.printf("d=%d Tk=%d Tq=%d Q.length=%d K.length=%d S.length=%d batch=%d\n",
+        	       d, Tk, Tq, Q.length, K.length, S.length, H);
+        int rc1 = Gemm.matrixDotProductF16StridedBatchFlat(cublasHandle, Tq, d, Q, Tk, d, K, S, H);
         if (rc1 != 0)
         	throw new RuntimeException("Scores GEMM failed: " + rc1);
         // Softmax row-wise on S (CPU), per head and per query row
@@ -52,18 +52,17 @@ public final class AttentionRunner {
         // GEMM 2: O = S * V (FP16 inputs, FP32 accumulate)
         //ArrayList<float[]> vList = new ArrayList<>(List.of(V));
         //ArrayList<float[]> oList = new ArrayList<>(List.of(O));
-
-        int rc2 = Gemm.matrixDotProductF16StridedBatchFlat2(ctx.getHandle(), Tq, Tk, S, Tk, d, V, O, H);
-        if (rc2 != 0) throw new RuntimeException("Output GEMM failed: " + rc2);
+/*
+        int rc2 = Gemm.matrixDotProductF16StridedBatchFlat2(cublasHandle, Tq, Tk, S, Tk, d, V, O, H);
+        if (rc2 != 0) 
+        	throw new RuntimeException("Output GEMM failed: " + rc2);
 
         // Optionally: download O from device slice if your native keeps device O
         // Here we assume JNI copied into oList; if not, uncomment:
         //Attn.downloadSlice(ctx.handle, O, ctx.dO(), 0, O.length);
-        System.out.println("Olist:");
-        int cnt = 0;
-        //for(float[] f : oList)
-        	System.out.println(++cnt+".)="+Arrays.toString(O));
-
+        if(DEBUG)
+        	System.out.println("Olist:"+Arrays.toString(O));
+ */
         return O;
     }
 

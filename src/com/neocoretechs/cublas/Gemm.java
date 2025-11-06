@@ -1,6 +1,8 @@
 package com.neocoretechs.cublas;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,6 +19,16 @@ public class Gemm {
 	static {
 		Gemm.loadLibrary(new File(System.getProperty("java.library.path")).list());
 	}
+	
+	/**
+	 * Pinned host buffer (optional for faster copies)
+	 * @param bytes number of bytes to directly allocate via ByteBuffer
+	 * @return The allocated ByteBuffer
+	 */
+    public static ByteBuffer allocPinned(int bytes) {
+        // Fallback: regular direct buffer. If you add cudaHostAlloc JNI, pin it there.
+        return ByteBuffer.allocateDirect(bytes).order(ByteOrder.nativeOrder());
+    }
 
 	/**
 	 * Tries to load the necessary library files from the given list of
@@ -67,6 +79,12 @@ public class Gemm {
 	public static native int matrixDotProductF16StridedBatchFlat2(long handle, int rowsA, int colsA, float[] A,int rowsB, int colsB, float[] B, float[] C, int batchSize);
 	public static native int matrixDotProductF16Stream(long handle, int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
 	public static native int sdot(long handle, int n, float[] x, int incx, float[] y, int incy, float[] result);
+    public static native float sdotSlice(long handle, ByteBuffer qBuf, int qOffsetFloats, ByteBuffer kBuf, int kOffsetFloats, int headSize);
+	public static native long cudaMallocBytes(long bytes);
+	public static native void cudaFreePtr(long dptr);
+	public static native int cudaMemcpyHtoD(long dptr, ByteBuffer src, long bytes);
+	public static native int cudaMemcpyDtoH(ByteBuffer dst, long dptr, long bytes);
+	public static native int sdotDevice(long handle, int n, long dX, int incx, long dY, int incy, long dResult);
 	public static native long cublasHandle();
 	public static native int cublasHandleDestroy(long handle);
 	public static native long[] cudaMemGetInfo();
