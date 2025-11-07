@@ -79,7 +79,7 @@ public class Gemm {
 	public static native int matrixDotProductF16StridedBatchFlat2(long handle, int rowsA, int colsA, float[] A,int rowsB, int colsB, float[] B, float[] C, int batchSize);
 	public static native int matrixDotProductF16Stream(long handle, int rows1, int columns1, ArrayList<float[]> m1, int rows2, int columns2, ArrayList<float[]> m2, ArrayList<float[]> mr, int batchSize);
 	public static native int sdot(long handle, int n, float[] x, int incx, float[] y, int incy, float[] result);
-    public static native float sdotSlice(long handle, ByteBuffer qBuf, int qOffsetFloats, ByteBuffer kBuf, int kOffsetFloats, int headSize);
+    public static native float sdotSliceCuBLAS(long handle, ByteBuffer qBuf, int qOffsetFloats, ByteBuffer kBuf, int kOffsetFloats, int headSize);
 	public static native long cudaMallocBytes(long bytes);
 	public static native void cudaFreePtr(long dptr);
 	public static native int cudaMemcpyHtoD(long dptr, ByteBuffer src, long bytes);
