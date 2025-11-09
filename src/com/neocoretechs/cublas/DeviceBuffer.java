@@ -31,31 +31,7 @@ public final class DeviceBuffer implements AutoCloseable {
 	public int getBufferCapacity() {
 		return memoryBuffer.capacity();
 	}
-	/**
-	 * 
-	 * @return true if memory sufficient for upload and uploaded, or previously uploaded, false if no memory on GPU
-	 */
-	public synchronized boolean upload() {
-		if(isUploaded) {
-			return true;
-		}
-      	//try (Timer timer = Timer.log("Upload "+memoryBuffer.capacity(),TimeUnit.MICROSECONDS)) {
-			if(!DeviceMemoryLedger.tryReserve(memoryBuffer.capacity()))
-				return false;
-      		devicePtr = Attn.convertBufferToFloat(memoryBuffer, blockSize, typeSize, headerBytes, format);
-      		//System.out.printf("***Allocating buffer:%d [Thread:%s]%n",devicePtr, Thread.currentThread().getName());
-      		cleaner = new DeviceMemoryReclaim(this);
-      	//}
-		if(devicePtr <= 0) {
-			//throw new RuntimeException("converBufferToFloat=" + devicePtr);
-			//cleaner.close();
-			DeviceMemoryLedger.onAllocationFailure();
-			isUploaded = false;
-			return false;
-		}
-		isUploaded = true;
-		return true;
-	}
+
 
 	public void download() {
 
